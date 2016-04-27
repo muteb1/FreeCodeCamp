@@ -265,6 +265,92 @@
           "¡Felicitaciones! Hemos agregado tu certificado de Desarrollo de interfaces a tu portafolio. A menos que elijas no mostrar tus soluciones, este certificado será públicamente visible y verificable.",
           ""
         ]
+        
+        
+	 
+	    {
+	      "id": "561add10cb82ac38a17513be",
+	      "title": “احصل على شهادة المطور المبتدئ”,
+	      "description": [
+	        [
+	          "//i.imgur.com/k8btNUB.jpg",
+	          "An image of our Front End Development Certificate",
+	          “ هذا التحدي تعطيك الجبهة شهادة تنمية النهاية التحقق منها . قبل أن نقوم بإصدار الشهادة الخاصة بك ، يجب علينا التحقق من أنك قد أكملت كل من التحديات خوارزمية البرمجة الأساسية والوسيطة ، وجميع مشاريعنا الأساسية والمتوسطة و المتقدمة تطوير الواجهة الأمامية . يجب أن نقبل أيضا لدينا الصدق الأكاديمي التعهد . انقر على “الزر أدناه لبدء هذه العملية .
+
+	          ""
+	        ],
+	        [
+	          "//i.imgur.com/HArFfMN.jpg",
+	          " تعريف الانتحال : الانتحال ( اسم) - نسخ عمل شخص آخر وعرضه كما بنفسك دون الاعتماد عليهم" ،
+"من خلال النقر أدناه، أتعهد بأن جميع من لديك كود مقدم أ) هو الرمز الذي أو زوج الخاص بك وكتب شخصيا ، أو ب ) ويأتي من المكتبات مفتوحة المصدر مثل مسج أو C ) ويعزى بوضوح إلى الكتاب الأصلي. أنت تعطي أيضا لنا إذن لتدقيق حلول التحدي الخاص بك و إلغاء الشهادة إذا نكتشف دليلا على الانتحال.",
+	          "#"
+	        ],
+	        [
+	          "//i.imgur.com/14F2Van.jpg",
+	          "صورة ن النص \ " متطلبات الأمامية شهادة التنمية \" " ،
+" دعونا تأكيد أنك قد أكملت كل من التحديات خوارزمية البرمجة الأساسية والوسيطة ، وجميع مشاريعنا تطوير الواجهة الأمامية الأساسية والمتوسطة و المتقدمة . انقر على الزر أدناه للتحقق من ذلك.",
+	          "#"
+	        ],
+	        [
+	          "//i.imgur.com/16SIhHO.jpg",
+	          "صورة ل كلمة \ " مبروك \" " ،
+" مبروك ! لقد أضفنا شهادة تطوير الواجهة الأمامية ل صفحة محفظتك . ما لم تختر ل إخفاء الحلول الخاصة بك ، وسوف تظل هذه الشهادة مرئية علنا و التحقق منه.",
+	          ""
+	        ]
+	      ],
+	      "challengeSeed": [
+	        {
+	          "properties": [
+	            "isHonest",
+	            "isFrontEndCert"
+	          ],
+	          "apis": [
+	            "/certificate/honest",
+	            "/certificate/verify/front-end"
+	          ],
+	          "stepIndex": [
+	            1,
+	            2
+	          ]
+	        }
+	      ],
+	      "tests": [
+	        {
+	          "id": "a202eed8fc186c8434cb6d61",
+	          "title": “اعكس الرقم”
+	        },
+	        {
+	          "id": "a302f7aae1aa3152a5b413bc",
+	          "title": “اصنع رقم”
+	        },
+	        {
+	          "id": "aaa48de84e1ecc7c742e1124",
+	          "title": “تحقق للعناصر”
+	        },
+	        {
+	          "id": "a26cbbe9ad8655a977e1ceb5",
+	          "title": “اوجد اطول كلمه في الحبل”
+	        },
+	        {
+	          "id": "ab6137d4e35944e21037b769",
+	          "title": "Title Case a Sentence"
+	        },
+	        {
+	          "id": "a789b3483989747d63b0e427",
+	          "title": “اوجد اطول رقم في السلسله”
+	        },
+	        {
+	          "id": "acda2fb1324d9b0fa741e6b5",
+	          "title": "Confirm the Ending"
+	        },
+	        {
+	          "id": "afcc8d540bea9ea2669306b6",
+	          "title": "Repeat a string repeat a string"
+	        [
+	        [
+	 
+{
+
       ],
       "titleEs": "Reclama tu certificado de Desarrollo de interfaces"
     }
