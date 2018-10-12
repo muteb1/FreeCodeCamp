@@ -1,16 +1,17 @@
-export function nameSpacedTransformer(ns, transformer) {
-  if (!transformer) {
-    return nameSpacedTransformer.bind(null, ns);
-  }
-  return (state) => {
-    const newState = transformer(state[ns]);
+import { pick } from 'lodash';
 
-    // nothing has changed
-    // noop
-    if (!newState || newState === state[ns]) {
-      return null;
-    }
-
-    return { ...state, [ns]: newState };
-  };
+export function dashify(str) {
+  return ('' + str)
+    .toLowerCase()
+    .replace(/\s/g, '-')
+    .replace(/[^a-z0-9\-\.]/gi, '')
+    .replace(/\:/g, '');
 }
+// todo: unify with server/utils/index.js:dasherize
+const dasherize = dashify;
+export { dasherize };
+
+export const fixCompletedChallengeItem = obj => pick(
+  obj,
+  [ 'id', 'completedDate', 'solution', 'githubLink', 'challengeType', 'files' ]
+);

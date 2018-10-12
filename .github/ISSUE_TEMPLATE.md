@@ -1,22 +1,18 @@
-#### FreeCodeCamp Issue template
-To Use this Template:
-* Fill out what you can
-* Delete what you do not fill out
+<!-- NOTE: If you're reporting a security issue, don't create a GitHub issue. Instead, email security@freecodecamp.org. We will look into it immediately. -->
 
-NOTE: ISSUES ARE NOT FOR CODE HELP - Ask for Help at https://gitter.im/FreeCodeCamp/Help
+#### Describe your problem and - if possible - how to reproduce it
 
-#### Issue Description
-* When Issue Happens
-* Steps To Reproduce
 
-#### Browser Information
-* Browser Name, Version
-* Operating System
+#### Add a Link to the page with the problem
 
-#### Your Code
 
-```js
-If relevant, paste all of your challenge code in here
-```
+#### Tell us about your browser and operating system
 
-#### Screenshot
+* Browser Name: 
+* Browser Version: 
+* Operating System: 
+
+
+#### If possible, add a screenshot here
+
+

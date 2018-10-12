@@ -1,11 +1,12 @@
 module.exports = function(app) {
   var router = app.loopback.Router();
-  router.get('/wiki/*', showWiki);
-  router.get('/wiki', showWiki);
+  router.get('/wiki/*', showForum);
 
   app.use(router);
 
-  function showWiki(req, res) {
-    res.render('wiki/show', { title: 'Wiki | Free Code Camp' });
+  function showForum(req, res) {
+    res.redirect(
+      'http://forum.freecodecamp.org/'
+    );
   }
 };

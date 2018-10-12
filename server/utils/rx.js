@@ -1,4 +1,5 @@
-import Rx from 'rx';
+import Rx, { AsyncSubject, Observable } from 'rx';
+import moment from 'moment';
 import debugFactory from 'debug';
 
 const debug = debugFactory('fcc:rxUtils');
@@ -24,10 +25,34 @@ export function saveInstance(instance) {
 // alias saveInstance
 export const saveUser = saveInstance;
 
-export function observeQuery(Model, method, query) {
-  return Rx.Observable.fromNodeCallback(Model[method], Model)(query);
+// observeQuery(Model: Object, methodName: String, query: Any) => Observable
+export function observeQuery(Model, methodName, query) {
+  return Rx.Observable.fromNodeCallback(Model[methodName], Model)(query);
 }
 
+// observeMethod(
+//   context: Object, methodName: String
+// ) => (query: Any) => Observable
 export function observeMethod(context, methodName) {
   return Rx.Observable.fromNodeCallback(context[methodName], context);
+}
+
+// must be bound to an observable instance
+// timeCache(amount: Number, unit: String) => Observable
+export function timeCache(time, unit) {
+  const source = this;
+  let cache;
+  let expireCacheAt;
+  return Observable.create(observable => {
+    // if there is no expire time set
+    // or if expireCacheAt is smaller than now,
+    // set new expire time in MS and create new subscription to source
+    if (!expireCacheAt || expireCacheAt < Date.now()) {
+      // set expire in ms;
+      expireCacheAt = moment().add(time, unit).valueOf();
+      cache = new AsyncSubject();
+      source.subscribe(cache);
+    }
+    return cache.subscribe(observable);
+  });
 }

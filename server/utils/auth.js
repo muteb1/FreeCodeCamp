@@ -1,7 +1,7 @@
-import assign from 'object.assign';
-
+const githubRegex = (/github/i);
 const providerHash = {
   facebook: ({ id }) => id,
+  github: ({ username }) => username,
   twitter: ({ username }) => username,
   linkedin({ _json }) {
     return _json && _json.publicProfileUrl || null;
@@ -15,45 +15,40 @@ export function getUsernameFromProvider(provider, profile) {
     null;
 }
 
-// using es6 argument destructing
-export function setProfileFromGithub(
-  user,
-  {
-    profileUrl: githubURL,
-    username
-  },
-  {
-    id: githubId,
-    'avatar_url': picture,
-    email: githubEmail,
-    'created_at': joinedGithubOn,
-    blog: website,
-    location,
-    name
+// createProfileAttributes(provider: String, profile: {}) => Object
+export function createUserUpdatesFromProfile(provider, profile) {
+  if (githubRegex.test(provider)) {
+    return createProfileAttributesFromGithub(profile);
   }
-) {
-  return assign(
-    user,
-    { isGithubCool: true, isMigrationGrandfathered: false },
-    {
-      name,
-      username: username.toLowerCase(),
-      location,
-      joinedGithubOn,
-      website,
-      picture,
-      githubId,
-      githubURL,
-      githubEmail,
-      githubProfile: githubURL
-    }
-  );
+  return {
+    [getSocialProvider(provider)]: getUsernameFromProvider(
+      getSocialProvider(provider),
+      profile
+    )
+  };
 }
-
-export function getFirstImageFromProfile(profile) {
-  return profile && profile.photos && profile.photos[0] ?
-    profile.photos[0].value :
-    null;
+// createProfileAttributes(profile) => profileUpdate
+function createProfileAttributesFromGithub(profile) {
+  const {
+    profileUrl: githubProfile,
+    username,
+    _json: {
+      avatar_url: picture,
+      blog: website,
+      location,
+      bio,
+      name
+    } = {}
+  } = profile;
+  return {
+    name,
+    username: username.toLowerCase(),
+    location,
+    bio,
+    website,
+    picture,
+    githubProfile
+  };
 }
 
 export function getSocialProvider(provider) {

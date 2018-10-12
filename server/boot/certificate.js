@@ -1,35 +1,98 @@
 import _ from 'lodash';
+import loopback from 'loopback';
+import moment from 'moment-timezone';
+import path from 'path';
 import dedent from 'dedent';
 import { Observable } from 'rx';
 import debug from 'debug';
+import { isEmail } from 'validator';
 
 import {
-  ifNoUser401,
-  ifNoUserSend
+  ifNoUser401
 } from '../utils/middleware';
 
 import { observeQuery } from '../utils/rx';
 
 import {
-  frontEndChallengeId,
-  dataVisChallengeId,
-  backEndChallengeId
-} from '../utils/constantStrings.json';
+  legacyFrontEndChallengeId,
+  legacyBackEndChallengeId,
+  legacyDataVisId,
 
+  respWebDesignId,
+  frontEndLibsId,
+  jsAlgoDataStructId,
+  dataVis2018Id,
+  apisMicroservicesId,
+  infosecQaId,
+  fullStackId
+} from '../utils/constantStrings.json';
+import certTypes from '../utils/certTypes.json';
+import superBlockCertTypeMap from '../utils/superBlockCertTypeMap';
 import {
   completeCommitment$
 } from '../utils/commit';
 
-import certTypes from '../utils/certTypes.json';
-
 const log = debug('fcc:certification');
-const sendMessageToNonUser = ifNoUserSend(
-  'must be logged in to complete.'
-);
+const renderCertifedEmail = loopback.template(path.join(
+  __dirname,
+  '..',
+  'views',
+  'emails',
+  'certified.ejs'
+));
 
-function isCertified(ids, challengeMap = {}) {
-  return _.every(ids, ({ id }) => challengeMap[id]);
+function isCertified(ids, completedChallenges = []) {
+  return _.every(
+    ids,
+    ({ id }) => _.find(
+      completedChallenges,
+      ({ id: completedId }) => completedId === id
+    )
+  );
 }
+
+const certIds = {
+  [certTypes.frontEnd]: legacyFrontEndChallengeId,
+  [certTypes.backEnd]: legacyBackEndChallengeId,
+  [certTypes.dataVis]: legacyDataVisId,
+  [certTypes.respWebDesign]: respWebDesignId,
+  [certTypes.frontEndLibs]: frontEndLibsId,
+  [certTypes.jsAlgoDataStruct]: jsAlgoDataStructId,
+  [certTypes.dataVis2018]: dataVis2018Id,
+  [certTypes.apisMicroservices]: apisMicroservicesId,
+  [certTypes.infosecQa]: infosecQaId,
+  [certTypes.fullStack]: fullStackId
+};
+
+const certViews = {
+  [certTypes.frontEnd]: 'certificate/legacy/front-end.jade',
+  [certTypes.backEnd]: 'certificate/legacy/back-end.jade',
+  [certTypes.dataVis]: 'certificate/legacy/data-visualization.jade',
+
+  [certTypes.respWebDesign]: 'certificate/responsive-web-design.jade',
+  [certTypes.frontEndLibs]: 'certificate/front-end-libraries.jade',
+  [certTypes.jsAlgoDataStruct]:
+  'certificate/javascript-algorithms-and-data-structures.jade',
+  [certTypes.dataVis2018]: 'certificate/data-visualization.jade',
+  [certTypes.apisMicroservices]: 'certificate/apis-and-microservices.jade',
+  [certTypes.infosecQa]:
+  'certificate/information-security-and-quality-assurance.jade',
+  [certTypes.fullStack]: 'certificate/full-stack.jade'
+};
+
+const certText = {
+  [certTypes.frontEnd]: 'Legacy Front End',
+  [certTypes.backEnd]: 'Legacy Back End',
+  [certTypes.dataVis]: 'Legacy Data Visualization',
+  [certTypes.fullStack]: 'Legacy Full Stack',
+  [certTypes.respWebDesign]: 'Responsive Web Design',
+  [certTypes.frontEndLibs]: 'Front End Libraries',
+  [certTypes.jsAlgoDataStruct]:
+  'JavaScript Algorithms and Data Structures',
+  [certTypes.dataVis2018]: 'Data Visualization',
+  [certTypes.apisMicroservices]: 'APIs and Microservices',
+  [certTypes.infosecQa]: 'Information Security and Quality Assurance'
+};
 
 function getIdsForCert$(id, Challenge) {
   return observeQuery(
@@ -46,103 +109,341 @@ function getIdsForCert$(id, Challenge) {
     .shareReplay();
 }
 
+function sendCertifiedEmail(
+  {
+    email = '',
+    name,
+    username,
+    isRespWebDesignCert,
+    isFrontEndLibsCert,
+    isJsAlgoDataStructCert,
+    isDataVisCert,
+    isApisMicroservicesCert,
+    isInfosecQaCert
+  },
+  send$
+) {
+  if (
+    !isEmail(email) ||
+    !isRespWebDesignCert ||
+    !isFrontEndLibsCert ||
+    !isJsAlgoDataStructCert ||
+    !isDataVisCert ||
+    !isApisMicroservicesCert ||
+    !isInfosecQaCert
+  ) {
+    return Observable.just(false);
+  }
+  const notifyUser = {
+    type: 'email',
+    to: email,
+    from: 'team@freeCodeCamp.org',
+    subject: dedent`
+      Congratulations on completing all of the
+      freeCodeCamp certifications!
+    `,
+    text: renderCertifedEmail({
+      username,
+      name
+    })
+  };
+  return send$(notifyUser).map(() => true);
+}
+
 export default function certificate(app) {
   const router = app.loopback.Router();
-  const { Challenge } = app.models;
+  const { Email, Challenge, User } = app.models;
+
+  function findUserByUsername$(username, fields) {
+    return observeQuery(
+      User,
+      'findOne',
+      {
+        where: { username },
+        fields
+      }
+    );
+  }
 
   const certTypeIds = {
-    [certTypes.frontEnd]: getIdsForCert$(frontEndChallengeId, Challenge),
-    [certTypes.dataVis]: getIdsForCert$(dataVisChallengeId, Challenge),
-    [certTypes.backEnd]: getIdsForCert$(backEndChallengeId, Challenge)
+    // legacy
+    [certTypes.frontEnd]: getIdsForCert$(legacyFrontEndChallengeId, Challenge),
+    [certTypes.backEnd]: getIdsForCert$(legacyBackEndChallengeId, Challenge),
+    [certTypes.dataVis]: getIdsForCert$(legacyDataVisId, Challenge),
+
+    // modern
+    [certTypes.respWebDesign]: getIdsForCert$(respWebDesignId, Challenge),
+    [certTypes.frontEndLibs]: getIdsForCert$(frontEndLibsId, Challenge),
+    [certTypes.dataVis2018]: getIdsForCert$(dataVis2018Id, Challenge),
+    [certTypes.jsAlgoDataStruct]: getIdsForCert$(jsAlgoDataStructId, Challenge),
+    [certTypes.apisMicroservices]: getIdsForCert$(
+      apisMicroservicesId,
+      Challenge
+    ),
+    [certTypes.infosecQa]: getIdsForCert$(infosecQaId, Challenge),
+    [certTypes.fullStack]: getIdsForCert$(fullStackId, Challenge)
   };
 
-  router.post(
-    '/certificate/verify/front-end',
-    ifNoUser401,
-    verifyCert.bind(null, certTypes.frontEnd)
+  const superBlocks = Object.keys(superBlockCertTypeMap);
+
+  router.get(
+    '/:username/front-end-certification',
+    (req, res) => res.redirect(
+      `/certification/${req.params.username}/legacy-front-end`
+    )
+  );
+
+  router.get(
+    '/:username/data-visualization-certification',
+    (req, res) => res.redirect(
+      `/certification/${req.params.username}/legacy-data-visualization`
+    )
+  );
+
+  router.get(
+    '/:username/back-end-certification',
+    (req, res) => res.redirect(
+      `/certification/${req.params.username}/legacy-back-end`
+    )
+  );
+
+  router.get(
+    '/:username/full-stack-certification',
+    (req, res) => res.redirect(
+      `/certification/${req.params.username}/full-stack`
+    )
   );
 
   router.post(
-    '/certificate/verify/back-end',
+    '/certificate/verify',
     ifNoUser401,
-    verifyCert.bind(null, certTypes.backEnd)
+    ifNoSuperBlock404,
+    verifyCert
   );
-
-  router.post(
-    '/certificate/verify/data-visualization',
-    ifNoUser401,
-    verifyCert.bind(null, certTypes.dataVis)
-  );
-
-  router.post(
-    '/certificate/honest',
-    sendMessageToNonUser,
-    postHonest
+  router.get(
+    '/certification/:username/:cert',
+    showCert
   );
 
   app.use(router);
 
-  function verifyCert(certType, req, res, next) {
-    const { user } = req;
-    return certTypeIds[certType]
+  const noNameMessage = dedent`
+  We need your name so we can put it on your certification.
+  Add your name to your account settings and click the save button.
+  Then we can issue your certification.
+  `;
+
+  const notCertifiedMessage = name => dedent`
+  it looks like you have not completed the necessary steps.
+  Please complete the required challenges to claim the
+  ${name}
+  `;
+
+  const alreadyClaimedMessage = name => dedent`
+    It looks like you already have claimed the ${name}
+    `;
+
+  const successMessage = (username, name) => dedent`
+    @${username}, you have successfully claimed
+    the ${name}!
+    Congratulations on behalf of the freeCodeCamp team!
+    `;
+
+  function verifyCert(req, res, next) {
+    const { body: { superBlock }, user } = req;
+    log(superBlock);
+    let certType = superBlockCertTypeMap[superBlock];
+    log(certType);
+    return user.getCompletedChallenges$()
+      .flatMap(() => certTypeIds[certType])
       .flatMap(challenge => {
-        const {
-          id,
-          tests,
-          name,
-          challengeType
-        } = challenge;
-        if (
-          !user[certType] &&
-          isCertified(tests, user.challengeMap)
-        ) {
-          const updateData = {
-            $set: {
-              [`challengeMap.${id}`]: {
-                id,
-                name,
-                completedDate: new Date(),
-                challengeType
-              },
-              [certType]: true
+        const certName = certText[certType];
+        if (user[certType]) {
+          return Observable.just(alreadyClaimedMessage(certName));
+        }
+
+        let updateData = {
+          $set: {
+            [certType]: true
+          }
+        };
+
+        if (challenge) {
+          const {
+            id,
+            tests,
+            challengeType
+          } = challenge;
+          if (!user[certType] &&
+            !isCertified(tests, user.completedChallenges)) {
+            return Observable.just(notCertifiedMessage(certName));
+          }
+          updateData['$push'] = {
+            completedChallenges: {
+              id,
+              completedDate: new Date(),
+              challengeType
             }
           };
-
-          return req.user.update$(updateData)
-            // If user has commited to nonprofit,
-            // this will complete his pledge
-            .flatMap(
-              () => completeCommitment$(user),
-              ({ count }, pledgeOrMessage) => {
-                if (typeof pledgeOrMessage === 'string') {
-                  log(pledgeOrMessage);
-                }
-                log(`${count} documents updated`);
-                return true;
-              }
-            );
+          user.completedChallenges[
+            user.completedChallenges.length - 1
+          ] = { id, completedDate: new Date() };
         }
-        return Observable.just(false);
-      })
-      .subscribe(
-        (didCertify) => {
-          if (didCertify) {
-            return res.status(200).send(true);
-          }
-          return res.status(200).send(
-            dedent`
-              Looks like you have not completed the neccessary steps.
-              Please return to the challenge map.
-            `
+
+        if (!user.name) {
+          return Observable.just(noNameMessage);
+        }
+        // set here so sendCertifiedEmail works properly
+        // not used otherwise
+        user[certType] = true;
+        return Observable.combineLatest(
+          // update user data
+          user.update$(updateData),
+          // If user has committed to nonprofit,
+          // this will complete their pledge
+          completeCommitment$(user),
+          // sends notification email is user has all 6 certs
+          // if not it noop
+          sendCertifiedEmail(user, Email.send$),
+          ({ count }, pledgeOrMessage) => ({ count, pledgeOrMessage })
+        )
+        .map(
+            ({ count, pledgeOrMessage }) => {
+              if (typeof pledgeOrMessage === 'string') {
+                log(pledgeOrMessage);
+              }
+              log(`${count} documents updated`);
+              return successMessage(user.username, certName);
+            }
           );
+        })
+      .subscribe(
+        (message) => {
+          return res.status(200).json({
+            message,
+            success: message.includes('Congratulations')
+          });
         },
         next
       );
   }
 
-  function postHonest(req, res, next) {
-    return req.user.update$({ $set: { isHonest: true } }).subscribe(
-      () => res.status(200).send(true),
+  function ifNoSuperBlock404(req, res, next) {
+    const { superBlock } = req.body;
+    if (superBlock && superBlocks.includes(superBlock)) {
+      return next();
+    }
+    return res.status(404).end();
+  }
+
+  function showCert(req, res, next) {
+    let { username, cert } = req.params;
+    username = username.toLowerCase();
+    const certType = superBlockCertTypeMap[cert];
+    const certId = certIds[certType];
+    return findUserByUsername$(
+      username,
+      {
+        isCheater: true,
+        isFrontEndCert: true,
+        isBackEndCert: true,
+        isFullStackCert: true,
+        isRespWebDesignCert: true,
+        isFrontEndLibsCert: true,
+        isJsAlgoDataStructCert: true,
+        isDataVisCert: true,
+        is2018DataVisCert: true,
+        isApisMicroservicesCert: true,
+        isInfosecQaCert: true,
+        isHonest: true,
+        username: true,
+        name: true,
+        completedChallenges: true,
+        profileUI: true
+      }
+    )
+    .subscribe(
+      user => {
+        if (!user) {
+          req.flash(
+            'danger',
+            `We couldn't find a user with the username ${username}`
+          );
+          return res.redirect('/');
+        }
+        const { isLocked, showCerts } = user.profileUI;
+        const profile = `/portfolio/${user.username}`;
+
+        if (!user.name) {
+          req.flash(
+            'danger',
+            dedent`
+              This user needs to add their name to their account
+              in order for others to be able to view their certification.
+            `
+          );
+          return res.redirect(profile);
+        }
+
+        if (user.isCheater) {
+          return res.redirect(profile);
+        }
+
+        if (isLocked) {
+          req.flash(
+            'danger',
+            dedent`
+              ${username} has chosen to make their profile
+                private. They will need to make their profile public
+                in order for others to be able to view their certification.
+            `
+          );
+          return res.redirect('/');
+        }
+
+        if (!showCerts) {
+          req.flash(
+            'danger',
+            dedent`
+              ${username} has chosen to make their certifications
+                private. They will need to make their certifications public
+                in order for others to be able to view them.
+            `
+          );
+          return res.redirect('/');
+        }
+
+        if (!user.isHonest) {
+          req.flash(
+            'danger',
+            dedent`
+              ${username} has not yet agreed to our Academic Honesty Pledge.
+            `
+          );
+          return res.redirect(profile);
+        }
+
+        if (user[certType]) {
+          const { completedChallenges = [] } = user;
+          const { completedDate = new Date() } = _.find(
+            completedChallenges, ({ id }) => certId === id
+          ) || {};
+
+          return res.render(
+            certViews[certType],
+            {
+              username: user.username,
+              date: moment(new Date(completedDate)).format('MMMM D, YYYY'),
+              name: user.name
+            }
+          );
+        }
+        req.flash(
+          'danger',
+          `Looks like user ${username} is not ${certText[certType]} certified`
+        );
+        return res.redirect(profile);
+      },
       next
     );
   }

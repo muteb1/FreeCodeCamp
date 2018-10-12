@@ -1,30 +1,72 @@
-import debugFactory from 'debug';
-import assign from 'object.assign';
+/**
+ *
+ * Any ref to fixCompletedChallengesItem should be removed post
+ * a db migration to fix all completedChallenges
+ *
+ */
 
-const censor = '**********************:P********';
-const debug = debugFactory('fcc:services:user');
-const protectedUserFields = {
-  id: censor,
-  password: censor,
-  profiles: censor
-};
+import { Observable } from 'rx';
+import _ from 'lodash';
+
+import {
+  getProgress,
+  normaliseUserFields,
+  userPropsForSession
+} from '../utils/publicUserProps';
+import { fixCompletedChallengeItem } from '../../common/utils';
 
 export default function userServices() {
   return {
     name: 'user',
-    read: (req, resource, params, config, cb) => {
-      let { user } = req;
-      if (user) {
-        debug('user is signed in');
-        // Zalgo!!!
-        return process.nextTick(() => {
-          cb(null, assign({}, user.toJSON(), protectedUserFields));
-        });
-      }
-      debug('user is not signed in');
-      return process.nextTick(() => {
-        cb(null, {});
-      });
+    read: function readUserService(
+      req,
+      resource,
+      params,
+      config,
+      cb) {
+      const queryUser = req.user;
+      const source = queryUser && Observable.forkJoin(
+        queryUser.getCompletedChallenges$(),
+        queryUser.getPoints$(),
+        (completedChallenges, progressTimestamps) => ({
+          completedChallenges,
+          progress: getProgress(progressTimestamps, queryUser.timezone)
+        })
+      );
+      Observable.if(
+        () => !queryUser,
+        Observable.of({}),
+        Observable.defer(() => source)
+          .map(({ completedChallenges, progress }) => ({
+            ...queryUser.toJSON(),
+            ...progress,
+            completedChallenges: completedChallenges.map(
+              fixCompletedChallengeItem
+            )
+          }))
+          .map(
+            user => ({
+              entities: {
+                user: {
+                  [user.username]: {
+                    ..._.pick(user, userPropsForSession),
+                    isEmailVerified: !!user.emailVerified,
+                    isGithub: !!user.githubProfile,
+                    isLinkedIn: !!user.linkedin,
+                    isTwitter: !!user.twitter,
+                    isWebsite: !!user.website,
+                    ...normaliseUserFields(user)
+                  }
+                }
+              },
+              result: user.username
+            })
+          )
+        )
+        .subscribe(
+          user => cb(null, user),
+          cb
+        );
     }
   };
 }

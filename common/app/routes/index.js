@@ -1,15 +1,8 @@
-import Jobs from './Jobs';
-import Hikes from './Hikes';
-import NotFound from '../components/NotFound/index.jsx';
+import { routes as settingsRoutes } from './Settings';
+import { routes as profileRoutes } from './Profile';
 
 export default {
-  path: '/',
-  childRoutes: [
-    Jobs,
-    Hikes,
-    {
-      path: '*',
-      component: NotFound
-    }
-  ]
+  ...settingsRoutes,
+  // ensure profile routes are last else they hijack other routes
+  ...profileRoutes
 };

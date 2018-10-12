@@ -1,185 +1,154 @@
-import loopback from 'loopback';
-import debugFactory from 'debug';
+import { Observable } from 'rx';
+// import debug from 'debug';
+import dedent from 'dedent';
+import { isEmail } from 'validator';
 
-import {
-  setProfileFromGithub,
-  getFirstImageFromProfile,
-  getUsernameFromProvider,
-  getSocialProvider
-} from '../../server/utils/auth';
+import { observeMethod, observeQuery } from '../../server/utils/rx';
+import { wrapHandledError } from '../../server/utils/create-handled-error.js';
 
-const { defaultProfileImage } = require('../utils/constantStrings.json');
-const githubRegex = (/github/i);
-const debug = debugFactory('fcc:models:userIdent');
-
-function createAccessToken(user, ttl, cb) {
-  if (arguments.length === 2 && typeof ttl === 'function') {
-    cb = ttl;
-    ttl = 0;
-  }
-  user.accessTokens.create({
-    created: new Date(),
-    ttl: Math.min(ttl || user.constructor.settings.ttl,
-      user.constructor.settings.maxTTL)
-  }, cb);
-}
+// const log = debug('fcc:models:userIdent');
 
 export default function(UserIdent) {
-  // original source
-  // github.com/strongloop/loopback-component-passport
+
+  UserIdent.on('dataSourceAttached', () => {
+    UserIdent.findOne$ = observeMethod(UserIdent, 'findOne');
+  });
+
   UserIdent.login = function(
-    provider,
+    _provider,
     authScheme,
     profile,
     credentials,
     options,
     cb
   ) {
+    const User = UserIdent.app.models.User;
+    const AccessToken = UserIdent.app.models.AccessToken;
     options = options || {};
     if (typeof options === 'function' && !cb) {
       cb = options;
       options = {};
     }
-    var autoLogin = options.autoLogin || !options.autoLogin;
-    var userIdentityModel = UserIdent;
+
+    // get the social provider data and the external id from auth0
     profile.id = profile.id || profile.openid;
-    userIdentityModel.findOne({
+    const auth0IdString = '' + profile.id;
+    const [ provider, socialExtId ] = auth0IdString.split('|');
+    const query = {
       where: {
-        provider: getSocialProvider(provider),
-        externalId: profile.id
-      }
-    }, function(err, identity) {
-      if (err) {
-        return cb(err);
-      }
-      if (identity) {
-        identity.credentials = credentials;
-        return identity.updateAttributes({
-          profile: profile,
-          credentials: credentials,
-          modified: new Date()
-        }, function(err) {
-          if (err) {
-            return cb(err);
-          }
-          // Find the user for the given identity
-          return identity.user(function(err, user) {
-            // Create access token if the autoLogin flag is set to true
-            if (!err && user && autoLogin) {
-              return (options.createAccessToken || createAccessToken)(
-                user,
-                function(err, token) {
-                  cb(err, user, identity, token);
-                }
-              );
-            }
-            return cb(err, user, identity);
-          });
-        });
-      }
-      // Find the user model
-      var userModel = userIdentityModel.relations.user &&
-        userIdentityModel.relations.user.modelTo ||
-        loopback.getModelByType(loopback.User);
-
-      var userObj = options.profileToUser(provider, profile, options);
-
-      if (!userObj.email && !options.emailOptional) {
-        process.nextTick(function() {
-          return cb('email is missing from the user profile');
-        });
-      }
-
-      var query;
-      if (userObj.email) {
-        query = { or: [
-          { username: userObj.username },
-          { email: userObj.email }
-        ]};
-      } else {
-        query = { username: userObj.username };
-      }
-      return userModel.findOrCreate({ where: query }, userObj, (err, user) => {
-        if (err) {
-          return cb(err);
+        provider: provider,
+        externalId: socialExtId
+      },
+      include: 'user'
+    };
+    // get the email from the auth0 (its expected from social providers)
+    const email = (profile && profile.emails && profile.emails[0]) ?
+                    profile.emails[0].value : '';
+    if (!isEmail('' + email)) {
+      throw wrapHandledError(
+        new Error('invalid or empty email recieved from auth0'),
+        {
+          message: dedent`
+    Oops... something is not right. We did not find a valid email from your
+    ${provider} account. Please try again with a different provider that has an
+    email available with it.
+          `,
+          type: 'info',
+          redirectTo: '/'
         }
-        var date = new Date();
-        return userIdentityModel.create({
-          provider: getSocialProvider(provider),
-          externalId: profile.id,
-          authScheme: authScheme,
-          profile: profile,
-          credentials: credentials,
-          userId: user.id,
-          created: date,
-          modified: date
-        }, function(err, identity) {
-          if (!err && user && autoLogin) {
-            return (options.createAccessToken || createAccessToken)(
-              user,
-              function(err, token) {
-                cb(err, user, identity, token);
+      );
+    }
+
+    if (provider === 'email') {
+
+      return User.findOne$({ where: { email } })
+        .flatMap(user => {
+          return user ?
+            Observable.of(user) :
+            User.create$({ email }).toPromise();
+        })
+        .flatMap(user => {
+          if (!user) {
+            throw wrapHandledError(
+              new Error('could not find or create a user'),
+              {
+                message: dedent`
+    Oops... something is not right. We could not find or create a
+    user with that email.
+                `,
+                type: 'info',
+                redirectTo: '/'
               }
             );
           }
-          return cb(err, user, identity);
-        });
-      });
-    });
-  };
+          const createToken = observeQuery(
+            AccessToken,
+            'create',
+            {
+              userId: user.id,
+              created: new Date(),
+              ttl: user.constructor.settings.ttl
+            }
+          );
+          const updateUser = user.update$({
+            emailVerified: true,
+            emailAuthLinkTTL: null,
+            emailVerifyTTL: null
+          });
+          return Observable.combineLatest(
+            Observable.of(user),
+            createToken,
+            updateUser,
+            (user, token) => ({user, token})
+          );
+        })
+        .subscribe(
+          ({ user, token }) => cb(null, user, null, token),
+          cb
+        );
 
-  UserIdent.observe('before save', function(ctx, next) {
-    var userIdent = ctx.currentInstance || ctx.instance;
-    if (!userIdent) {
-      debug('no user identity instance found');
-      return next();
+    } else {
+
+      return UserIdent.findOne$(query)
+        .flatMap(identity => {
+          return identity ?
+            Observable.of(identity.user()) :
+            User.findOne$({ where: { email } })
+              .flatMap(user => {
+                return user ?
+                  Observable.of(user) :
+                  User.create$({ email }).toPromise();
+              });
+        })
+        .flatMap(user => {
+
+          const createToken = observeQuery(
+            AccessToken,
+            'create',
+            {
+              userId: user.id,
+              created: new Date(),
+              ttl: user.constructor.settings.ttl
+            }
+          );
+          const updateUser = user.update$({
+            email: email,
+            emailVerified: true,
+            emailAuthLinkTTL: null,
+            emailVerifyTTL: null
+          });
+          return Observable.combineLatest(
+            Observable.of(user),
+            createToken,
+            updateUser,
+            (user, token) => ({ user, token })
+          );
+        })
+        .subscribe(
+          ({ user, token }) => cb(null, user, null, token),
+          cb
+        );
+
     }
-    return userIdent.user(function(err, user) {
-      let userChanged = false;
-      if (err) { return next(err); }
-      if (!user) {
-        debug('no user attached to identity!');
-        return next();
-      }
-
-      const { profile, provider } = userIdent;
-      const picture = getFirstImageFromProfile(profile);
-
-      debug('picture', picture, user.picture);
-      // check if picture was found
-      // check if user has no picture
-      // check if user has default picture
-      // set user.picture from oauth provider
-      if (
-        picture &&
-        (!user.picture || user.picture === defaultProfileImage)
-      ) {
-        debug('setting user picture');
-        user.picture = picture;
-        userChanged = true;
-      }
-
-      if (!githubRegex.test(provider) && profile) {
-        user[provider] = getUsernameFromProvider(provider, profile);
-        userChanged = true;
-      }
-
-      // if user signed in with github refresh their info
-      if (githubRegex.test(provider) && profile && profile._json) {
-        debug("user isn't github cool or username from github is different");
-        setProfileFromGithub(user, profile, profile._json);
-        userChanged = true;
-      }
-
-
-      if (userChanged) {
-        return user.save(function(err) {
-          if (err) { return next(err); }
-          return next();
-        });
-      }
-      debug('exiting after user identity before save');
-      return next();
-  });
- });
+  };
 }

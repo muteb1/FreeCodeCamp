@@ -4,20 +4,6 @@ module.exports = {
 
   sessionSecret: process.env.SESSION_SECRET,
 
-  trello: {
-    key: process.env.TRELLO_KEY,
-    secret: process.env.TRELLO_SECRET
-  },
-
-  blogger: {
-    key: process.env.BLOGGER_KEY
-  },
-
-  mandrill: {
-    user: process.env.MANDRILL_USER,
-    password: process.env.MANDRILL_PASSWORD
-  },
-
   facebook: {
     clientID: process.env.FACEBOOK_ID,
     clientSecret: process.env.FACEBOOK_SECRET,
@@ -52,10 +38,16 @@ module.exports = {
     clientID: process.env.LINKEDIN_ID,
     clientSecret: process.env.LINKEDIN_SECRET,
     callbackURL: '/auth/linkedin/callback',
+    profileFields: ['public-profile-url'],
     scope: ['r_basicprofile', 'r_emailaddress'],
     passReqToCallback: true
   },
   slackHook: process.env.SLACK_WEBHOOK,
 
-  cookieSecret: process.env.COOKIE_SECRET
+  cookieSecret: process.env.COOKIE_SECRET,
+
+  stripe: {
+    public: process.env.STRIPE_PUBLIC,
+    secret: process.env.STRIPE_SECRET
+  }
 };

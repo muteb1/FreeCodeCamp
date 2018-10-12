@@ -1,6 +1,5 @@
 const pathsOfNoReturn = [
   'link',
-  'bower_components',
   'auth',
   'login',
   'logout',
@@ -32,12 +31,12 @@ export default function addReturnToUrl() {
       req.method !== 'GET' ||
       pathsOfNoReturnRegex.test(path) ||
       !whiteListRegex.test(path) ||
-      (/news/i).test(path) && (/hot/i).test(req.path)
+      (/hot/i).test(req.path)
     ) {
       return next();
     }
-    req.session.returnTo = req.originalUrl === '/map-aside' ?
-      '/map' :
+    req.session.returnTo = req.originalUrl.includes('/map') ?
+      '/' :
       req.originalUrl;
     return next();
   };

@@ -1,26 +1,29 @@
 extends ../layout
 block content
-    script(src="/bower_components/cal-heatmap/cal-heatmap.min.js")
+    include ../partials/flyer
+    .app-content.app-centered
     script.
         var challengeName = 'Profile View';
     if (user && user.username === username)
       .row
-        if (!user.isGithubCool)
-          a.btn.btn-lg.btn-block.btn-github.btn-link-social(href='/link/github')
-              i.fa.fa-github
-              | Link my GitHub to unlock my portfolio
         .col-xs-12
             a.btn.btn-lg.btn-block.btn-primary.btn-link-social(href='/settings')
-                | Update your settings
+                | Update my settings
+        .col-xs-12
+            a.btn.btn-lg.btn-block.btn-primary.btn-link-social(href='/signout')
+                | Sign me out of freeCodeCamp
+        .col-xs-12
+            a.btn.btn-lg.btn-block.btn-primary.btn-link-social(href='mailto:team@freecodecamp.org')
+                | Email us at team@freecodecamp.org
         .spacer
     h1.text-center #{username}'s code portfolio
     hr
     .row
         .col-xs-12.col-sm-10.col-sm-offset-1.col-md-8.col-md-offset-2.text-center
             if picture
-                img.img-center.img-responsive.public-profile-img(src=picture)
+                img.img-center.img-responsive.public-profile-img.border-radius-5(src=picture)
             else
-                img.img-center.img-responsive.public-profile-img(src='https://s3.amazonaws.com/freecodecamp/camper-image-placeholder.png')
+                img.img-center.img-responsive.public-profile-img.border-radius-5(src='https://s3.amazonaws.com/freecodecamp/camper-image-placeholder.png')
             h1.text-center.negative-5.profile-social-icons
                 if (twitter)
                     a.fa.fa-twitter-square.text-primary(title="@#{username}'s Twitter Profile", href='https://twitter.com/' + twitter, target='_blank')
@@ -28,18 +31,15 @@ block content
                     a.fa.fa-github-square.text-primary(title="@#{username}'s GitHub Profile", href=github, target='_blank')
                 if (linkedin)
                     a.fa.fa-linkedin-square.text-primary(title="@#{username}'s LinkedIn Profile", href=linkedin, target='_blank')
-                if (facebook)
-                    a.fa.fa-facebook-square.text-primary(title="@#{username}'s Facebook Profile", href='https://facebook.com/' + facebook, target='_blank')
-                if (google)
-                    a.fa.fa-google-plus-square.text-primary(title="@#{username}'s Google Profile", href='https://plus.google.com/' + google, target='_blank')
             h1.flat-top.wrappable= name
             h1.flat-top.wrappable= location
+            p.flat-top.bio= bio
             h1.flat-top.text-primary= "[ " + (progressTimestamps.length) + " ]"
             if pledge
                 .spacer
                   h4
                     | This camper has committed to giving $#{pledge.amount} to
-                    a(href='#{pledge.donateUrl}?ref=freecodecamp.com' target='_blank')  #{pledge.displayName}
+                    a(href='#{pledge.donateUrl}?ref=freecodecamp.org' target='_blank')  #{pledge.displayName}
                     |  each month until they have completed their #{pledge.goal}.
                 .spacer
             .row
@@ -52,6 +52,28 @@ block content
                     if isBackEndCert
                         .button-spacer
                         a.btn.btn-primary.btn-block(href='/' + username + '/back-end-certification') View My Back End Development Certification
+                    if isRespWebDesignCert
+                        .button-spacer
+                        a.btn.btn-primary.btn-block(href='/' + username + '/responsive-web-design-certification') View My Responsive Web Design Certification
+                    if isFrontEndLibsCert
+                        .button-spacer
+                        a.btn.btn-primary.btn-block(href='/' + username + '/front-end-libraries-certification') View My Front End Libraries Certification
+                    if isJsAlgoDataStructCert
+                        .button-spacer
+                        a.btn.btn-primary.btn-block(href='/' + username + '/javascript-algorithms-data-structures-certification') View My JavaScript Algorithms Data Structures Certification
+                    if isApisMicroservicesCert
+                        .button-spacer
+                        a.btn.btn-primary.btn-block(href='/' + username + '/apis-microservices-certification') View My APIs Microservices Certification
+                    if isInfosecQaCert
+                        .button-spacer
+                        a.btn.btn-primary.btn-block(href='/' + username + '/information-security-quality-assurance-certification') View My Information Sequrity Quality Assurance Certification
+                    if (user && user.username != username)
+                        .button-spacer
+                        a.btn.btn-primary.btn-block(href='/' + username + '/report-user/') Report this user's profile for abuse
+    .row
+      .col-xs-12.text-center
+        if (badges.coreTeam && badges.coreTeam.length)
+            h4 Core Team #{badges.coreTeam.reverse().join(', ')}
 
     .spacer
     .col-md-12
@@ -60,20 +82,8 @@ block content
                 $(document).ready(function () {
                     var cal = new CalHeatMap();
                     var calendar = !{JSON.stringify(calender)};
-                  /*
-                    var estUTCOffset = -5;
-                    // moment returns the utc offset in minutes
-                    var userUTCOffset = moment().utcOffset() / 60;
-                    var secondsToOffset =
-                      (estUTCOffset - userUTCOffset) * 3600;
-                    var offsetCalendar = {};
-                    for (var prop in calendar) {
-                      if (calendar.hasOwnProperty(prop)) {
-                        var offsetProp = prop + secondsToOffset;
-                        offsetCalendar[offsetProp] = calendar[prop];
-                      }
-                    }
-                    */
+                    var rectSelector = "#cal-heatmap > svg > svg.graph-legend > g > rect.r";
+                    var calLegendTitles = ["0 items", "1 item", "2 items", "3 or more items"]
                     cal.init({
                         itemSelector: "#cal-heatmap",
                         domain: "month",
@@ -92,6 +102,9 @@ block content
                         label: {
                             position: "top"
                         }
+                    });
+                    calLegendTitles.forEach(function(title, i) {
+                        document.querySelector(rectSelector + (i + 1).toString() + '> title').innerHTML = title;
                     });
                 });
         .row
@@ -114,13 +127,13 @@ block content
                           for challenge in projects
                               tr
                                   td.col-xs-5.hidden-xs
-                                      a(href='/challenges/' + removeOldTerms(challenge.name), target='_blank')= removeOldTerms(challenge.name)
+                                    a(href='/challenges/#{challenge.block}/#{challenge.dashedName}', target='_blank')= challenge.name
                                   td.col-xs-2.hidden-xs= challenge.completedDate ? challenge.completedDate : 'Not Available'
                                   td.col-xs-2.hidden-xs= challenge.lastUpdated ? challenge.lastUpdated : ''
                                   td.col-xs-2.hidden-xs
-                                      a(href=challenge.solution, target='_blank') View my project
+                                      a(href=challenge.solution, target='_blank') View project
                                   td.col-xs-12.visible-xs
-                                      a(href=challenge.solution, target='_blank')= removeOldTerms(challenge.name)
+                                      a(href=challenge.solution, target='_blank')= challenge.name
               if (algorithms.length > 0)
                   .col-sm-12
                       table.table.table-striped
@@ -132,19 +145,19 @@ block content
                                   th.col-xs-2.hidden-xs Solution
                           for challenge in algorithms
                               tr
-                                  td.col-xs-5.hidden-xs= removeOldTerms(challenge.name)
+                                  td.col-xs-5.hidden-xs= challenge.name
                                   td.col-xs-2.hidden-xs= challenge.completedDate ? challenge.completedDate : 'Not Available'
                                   td.col-xs-2.hidden-xs= challenge.lastUpdated ? challenge.lastUpdated : ''
                                   td.col-xs-2.hidden-xs
                                     if (challenge.solution)
-                                        a(href='/challenges/' + removeOldTerms(challenge.name) + '?solution=' + encodeURIComponent(encodeFcc(challenge.solution)), target='_blank') View solution
+                                        a(href='/challenges/#{challenge.block}/#{challenge.dashedName}?solution=#{encodeURIComponent(encodeFcc(challenge.solution))}', target='_blank') View solution
                                     else
-                                        a(href='/challenges/' + removeOldTerms(challenge.name)) View this challenge
+                                        a(href='/challenges/#{challenge.block}/#{challenge.dashedName}') View this challenge
                                   td.col-xs-12.visible-xs
                                     if (challenge.solution)
-                                        a(href='/challenges/' + removeOldTerms(challenge.name) + '?solution=' + encodeURIComponent(encodeFcc(challenge.solution)), target='_blank')= removeOldTerms(challenge.name)
+                                        a(href='/challenges/#{challenge.block}/#{challenge.dashedName}?solution=#{encodeURIComponent(encodeFcc(challenge.solution))}', target='_blank')= challenge.name
                                     else
-                                        a(href='/challenges/' + removeOldTerms(challenge.name))= removeOldTerms(challenge.name)
+                                        a(href='/challenges/#{challenge.block}/#{challenge.dashedName}')= challenge.name
               if (challenges.length > 0)
                   .col-sm-12
                       table.table.table-striped
@@ -156,16 +169,20 @@ block content
                                   th.col-xs-2.hidden-xs Solution
                           for challenge in challenges
                               tr
-                                  td.col-xs-5.hidden-xs= removeOldTerms(challenge.name)
+                                  td.col-xs-5.hidden-xs= challenge.name
                                   td.col-xs-2.hidden-xs= challenge.completedDate ? challenge.completedDate : 'Not Available'
                                   td.col-xs-2.hidden-xs= challenge.lastUpdated ? challenge.lastUpdated : ''
                                   td.col-xs-2.hidden-xs
-                                    if (challenge.solution)
-                                        a(href='/challenges/' + removeOldTerms(challenge.name) + '?solution=' + encodeURIComponent(encodeFcc(challenge.solution)), target='_blank') View solution
+                                    if (challenge.solution && challenge.name)
+                                      a(href='/challenges/#{challenge.block}/#{challenge.dashedName}?solution=#{encodeURIComponent(encodeFcc(challenge.solution))}', target='_blank') View solution
+                                    else if (challenge.name)
+                                        a(href='/challenges/#{challenge.block}/#{challenge.dashedName}') View this challenge
                                     else
-                                        a(href='/challenges/' + removeOldTerms(challenge.name)) View this challenge
+                                        span N/A
                                   td.col-xs-12.visible-xs
-                                    if (challenge.solution)
-                                        a(href='/challenges/' + removeOldTerms(challenge.name) + '?solution=' + encodeURIComponent(encodeFcc(challenge.solution)), target='_blank')= removeOldTerms(challenge.name)
+                                    if (challenge.solution && challenge.name)
+                                        a(href='/challenges/#{challenge.block}/#{challenge.dashedName}?solution=#{encodeURIComponent(encodeFcc(challenge.solution))}', target='_blank')= challenge.name
+                                    else if (challenge.name)
+                                        a(href='/challenges/#{challenge.block}/#{challenge.dashedName}')= challenge.name
                                     else
-                                        a(href='/challenges/' + removeOldTerms(challenge.name))= removeOldTerms(challenge.name)
+                                        span N/A

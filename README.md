@@ -1,83 +1,125 @@
-![](https://s3.amazonaws.com/freecodecamp/wide-social-banner.png)
+![freeCodeCamp Social Banner](https://s3.amazonaws.com/freecodecamp/wide-social-banner.png)
+[![Build Status](https://travis-ci.org/freeCodeCamp/freeCodeCamp.svg?branch=staging)](https://travis-ci.org/freeCodeCamp/freeCodeCamp)
+[![Pull Requests Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat)](http://makeapullrequest.com)
+[![first-timers-only Friendly](https://img.shields.io/badge/first--timers--only-friendly-blue.svg)](http://www.firsttimersonly.com/)
+[![Known Vulnerabilities](https://snyk.io/test/github/freecodecamp/freecodecamp/badge.svg)](https://snyk.io/test/github/freecodecamp/freecodecamp)
 
-[![Throughput Graph](https://graphs.waffle.io/freecodecamp/freecodecamp/throughput.svg)](https://waffle.io/freecodecamp/freecodecamp/metrics)
+## Welcome to freeCodeCamp's open source codebase and curriculum!
 
-[![Join the chat at https://gitter.im/freecodecamp/freecodecamp](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/freecodecamp/freecodecamp?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+freeCodeCamp is a friendly community where you can learn to code for free. It is run by a [donor-supported 501(c)(3) nonprofit](https://donate.freecodecamp.org) with the goal of helping millions of busy adults transition into tech. Our community has already helped more than 10,000 people get their first developer job.
 
-Welcome to Free Code Camp's open source codebase and curriculum!
-=======================
+Our full stack web development curriculum is completely free and self-paced. We have thousands of interactive coding challenges to help you expand your skills.
 
-Free Code Camp is a friendly open-source community where you learn to code and help nonprofits.
+### Certifications
 
-**We help our campers build job-worthy portfolios of real apps used by real people, while helping nonprofits.**
+freeCodeCamp offers several free developer certifications. Each of these certifications involves building 5 required web app projects, along with hundreds of optional coding challenges to help you prepare for those projects. We estimate that each certification will take beginner programmers around 300 hours to learn.
 
-You start by working through our self-paced, browser-based full stack JavaScript curriculum.
+Each of these 30 project in the freeCodeCamp curriculum has its own agile user stories and automated tests. These help you build up your project incrementally, and ensure you've fulfilled all the user stories before submitting it.
 
-### By working through our curriculum, you can earn four certifications:
-##### 1. Front End Certification
-The first section will teach you the basics of how webpages work and also introduce you to JavaScript programming.
+You can pull in these test suites through [freeCodeCamp's CDN](https://cdn.freecodecamp.org/testable-projects-fcc/v1/bundle.js). This means you can build these projects on websites like CodePen and Glitch - or even on your local development environment.
 
-Skills you'll practice include `HTML, CSS, JavaScript, jQuery` and `Bootstrap`.
+Once you’ve earned a certification, you will always have it. You will always be able to link to it from your LinkedIn or résumé. And when your prospective employers or freelance clients click that link, they’ll see a verified certification specific to you.
 
-To earn this certification, you'll build **10 front-end projects** and implement many **JavaScript algorithms**.
+The one exception to this is in the event that we discover violations of our [Academic Honesty Policy](https://www.freecodecamp.org/academic-honesty). When we catch people unambiguously plagiarizing (submitting other people's code or projects as their own without citation), we do what all rigorous institutions of learning should do - we revoke their certifications and ban those people.
 
-##### 2. Data Visualization Certification
-The second section builds upon the first and introduces you to more advanced topics such as `Sass, React` and `D3`.
+Here are our six core certifications:
 
-To earn this certification, you'll build **5 React-apps** and **5 Data visualization apps** using `D3.js`.
+#### 1. Responsive Web Design Certification
 
-##### 3. Back End Certification
-The third section introduces you to back end development using `Node.js, Express,` and `MongoDB`. It also teaches you about the important concept of source control using `Git`.
+- Basic HTML and HTML5
+- Basic CSS
+- Applied Visual Design
+- Applied Accessibility
+- Responsive Web Design Principles
+- CSS Flexbox
+- CSS Grid <br />
+  **Projects**: Tribute Page, Survey Form, Product Landing Page, Technical Documentation Page, Personal Portfolio Webpage
 
-To earn this certification, you'll build **5 APIs** and **5 full stack apps**.
+#### 2. JavaScript Algorithms and Data Structures Certification
 
-We will accept solutions implemented in _any_ programming language, as long as both a live demo and the source code are publicly accessible.
+- Basic JavaScript
+- ES6
+- Regular Expressions
+- Debugging
+- Basic Data Structures
+- Algorithm Scripting
+- Object Oriented Programming
+- Functional Programming <br />
+  **Projects**: Palindrome Checker, Roman Numeral Converter, Caesars Cipher, Telephone Number Validator, Cash Register
 
-##### 4. Full Stack Certification
-The fourth section is where you'll get **real-world experience** by working on projects for **nonprofits**.
-We'll pair you with another camper, an agile project manager, and a stakeholder from a nonprofit organization. Together, you'll plan, build and maintain apps that help that nonprofit carry out its mission more effectively.
+#### 3. Front End Libraries Certification
 
-For this certification, you'll work on **two projects from scratch** and then **maintain/upgrade two existing projects**.
+- Bootstrap
+- jQuery
+- Sass
+- React
+- Redux
+- React and Redux <br />
+  **Projects**: Random Quote Machine, Markdown Previewer, Drum Machine, JavaScript Calculator, Pomodoro Clock
 
----
+#### 4. Data Visualization Certification
 
-This code is running live at [FreeCodeCamp.com](http://www.FreeCodeCamp.com). We also have [Gitter](https://gitter.im/FreeCodeCamp/FreeCodeCamp), a [Medium publication](http://medium.freecodecamp.com), and even a [Twitch.tv channel](http://twitch.tv/freecodecamp).
+- Data Visualization with D3
+- JSON APIs and Ajax <br />
+  **Projects**: Bar Chart, Scatterplot Graph, Heat Map, Choropleth Map, Treemap Diagram
 
-### [Join our community here](http://www.freecodecamp.com/signin).
+#### 5. APIs and Microservices Certification
 
-Wiki
-------------
+- Managing Packages with Npm
+- Basic Node and Express
+- MongoDB and Mongoose <br />
+  **Projects**: Timestamp Microservice, Request Header Parser, URL Shortener, Exercise Tracker, File Metadata Microservice
 
-We would love your help expanding our [wiki](https://github.com/freecodecamp/freecodecamp/wiki). Our goal is to become a great resource for people learning to code, building local coding communities, and applying for coding jobs.
+#### 6. Information Security and Quality Assurance Certification
 
-Found a bug?
-------------
+- Information Security with HelmetJS
+- Quality Assurance and Testing with Chai
+- Advanced Node and Express <br />
+  **Projects**: Metric-Imperial Converter, Issue Tracker, Personal Library, Stock Price Checker, Anonymous Message Board
 
-Do not file an issue until you have followed these steps:
+#### Full Stack Development Certification
 
-1. Read [Help I've Found a Bug](https://github.com/FreeCodeCamp/FreeCodeCamp/wiki/Help-I've-Found-a-Bug) wiki page and follow the instructions there.
-2. Ask for confirmation in the appropriate [Help Room](https://github.com/FreeCodeCamp/FreeCodeCamp/wiki/Help-Rooms).
-3. Please *do not* open an issue without a 3rd party confirmation of your problem.
+Once you earn all 6 of these certifications, you'll be able to claim your freeCodeCamp Full Stack Development Certification. This final distinction signifies that you’ve completed around 1,800 hours of coding with a wide range of web development tools.
 
-Contributing
-------------
+#### Legacy Certifications
 
-We welcome pull requests from Free Code Camp campers (our students) and seasoned JavaScript developers alike! Please follow [these steps](CONTRIBUTING.md) to contribute.
+We also have 3 legacy certifications from our 2015 curriculum, which are still available. All of the required projects for these legacy certifications will remain available on freeCodeCamp.
 
-License
--------
+- Legacy Front End Development Certification
+- Legacy Data Visualization Certification
+- Legacy Back End Development Certification
 
-The BSD-3-Clause
+### The Learning Platform
 
-Copyright (c) 2016, Free Code Camp
-All rights reserved.
+This code is running live at [freeCodeCamp.org](https://www.freecodecamp.org).
 
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+Our community also has:
 
-1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+- a super active [forum](https://forum.freecodecamp.org)
+- thousands of [local study groups](https://study-group-directory.freecodecamp.org/) around the world, where you can code together in person
+- Medium's [largest technical publication](https://medium.freecodecamp.org)
+- A popular [YouTube channel](https://youtube.com/freecodecamp)
+- and a comprehensive [guide to thousands of programming topics](https://guide.freecodecamp.org)
 
-2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+### [Join our community here](https://www.freecodecamp.org/signin).
 
-3. Neither the name of Free Code Camp nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+### Found a bug?
 
-THIS SOFTWARE IS PROVIDED BY FREE CODE CAMP AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+If you think you've found a bug, first read the [Help I've Found a Bug](https://forum.freecodecamp.org/t/how-to-report-a-bug/19543) article and follow its instructions. If you're confident it's a new bug, go ahead and create a new GitHub issue. Be sure to include as much information as possible so we can reproduce the bug.
+
+### Found a security issue?
+
+Please don't create GitHub issues for security issues. Instead, please send an email to security@freecodecamp.org and we'll look into it immediately.
+
+### Contributing
+
+We welcome pull requests from members of the freeCodeCamp community and from veteran developers alike! Please follow [these steps](CONTRIBUTING.md) to contribute.
+
+### License
+
+Copyright (c) 2018 freeCodeCamp.
+
+The content of this repository bound by the following licenses:
+
+- The computer software is licensed under the [BSD-3-Clause](./LICENSE.md).
+- The [curricular content](https://www.npmjs.com/package/@freecodecamp/curriculum) in the [`/seed`](/seed) and subdirectories are licensed under the [CC-BY-SA-4.0](https://github.com/freeCodeCamp/curriculum/blob/master/LICENSE.md).
